@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intercoop - Portal de Solicitudes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .glass-effect { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+
+    <div id="loginScreen" class="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-slate-900 relative">
+        <div class="glass-effect p-10 rounded-2xl shadow-2xl w-full max-w-md border border-white/20 transform transition-all z-10">
+            <div class="text-center mb-8">
+                <div class="bg-blue-600 h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-white text-2xl">
+                    <i class="fa-solid fa-building-columns"></i>
+                </div>
+                <h2 class="text-3xl font-extrabold text-slate-800 tracking-tight">INTERCOOP</h2>
+                <p class="text-sm font-medium text-slate-500 mt-1">Portal de Gestión Interna</p>
+            </div>
+            <form id="loginForm" onsubmit="iniciarSesion(event)">
+                <div class="mb-5">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Correo Electrónico</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-envelope absolute left-3 top-3.5 text-slate-400"></i>
+                        <input type="email" id="email" class="w-full border border-slate-300 pl-10 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="admin@intercoop.com.gt" required>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Contraseña</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-3 top-3.5 text-slate-400"></i>
+                        <input type="password" id="password" class="w-full border border-slate-300 pl-10 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="••••••••" required>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow-md hover:bg-blue-700 hover:shadow-lg transition-all flex justify-center items-center gap-2">
+                    Ingresar <i class="fa-solid fa-arrow-right"></i>
+                </button>
+                <p id="loginError" class="text-red-500 text-sm text-center mt-4 hidden bg-red-50 p-2 rounded-md border border-red-100"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Credenciales incorrectas o API desconectada.</p>
+            </form>
+            
+            <div class="mt-8 pt-6 border-t border-slate-200 text-center">
+                <p class="text-xs font-semibold text-slate-400 tracking-wide">Desarrollado por <span class="text-blue-600">Daniel Rivera</span></p>
+            </div>
+        </div>
+        
+        <div class="absolute bottom-4 text-white/30 text-xs font-light tracking-widest uppercase">Prueba Técnica - Full Stack</div>
+    </div>
+
+    <div id="mainScreen" class="hidden min-h-screen flex flex-col bg-slate-50">
+        <nav class="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-10">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16 items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-blue-600 text-white p-2 rounded-lg"><i class="fa-solid fa-laptop-code"></i></div>
+                        <h1 class="text-xl font-bold text-slate-800">Intercoop <span class="font-light text-slate-500">Workspace</span></h1>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span id="userRol" class="text-xs font-semibold bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-100 hidden sm:flex items-center gap-1">
+                            <i class="fa-solid fa-user-shield"></i> Administrador
+                        </span>
+                        <button onclick="cerrarSesion()" class="text-sm font-medium text-slate-500 hover:text-red-600 transition flex items-center gap-2 border-l pl-4 border-slate-200">
+                            Salir <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="p-4 md:p-8 max-w-7xl mx-auto w-full flex-grow">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-slate-800">Panel de Control</h2>
+                <p class="text-slate-500 text-sm">Resumen de estadísticas en tiempo real.</p>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-slate-500 text-sm font-medium">Total Solicitudes</h3>
+                            <p id="statTotal" class="text-3xl font-extrabold text-slate-800 mt-1">0</p>
+                        </div>
+                        <div class="bg-blue-100 text-blue-600 p-3 rounded-lg"><i class="fa-solid fa-chart-simple text-xl"></i></div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-slate-500 text-sm font-medium">Pendientes</h3>
+                            <p id="statPendientes" class="text-3xl font-extrabold text-yellow-600 mt-1">0</p>
+                        </div>
+                        <div class="bg-yellow-100 text-yellow-600 p-3 rounded-lg"><i class="fa-regular fa-clock text-xl"></i></div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-slate-500 text-sm font-medium">Completadas</h3>
+                            <p id="statCompletadas" class="text-3xl font-extrabold text-emerald-600 mt-1">0</p>
+                        </div>
+                        <div class="bg-emerald-100 text-emerald-600 p-3 rounded-lg"><i class="fa-solid fa-check-double text-xl"></i></div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-slate-500 text-sm font-medium">Rechazadas</h3>
+                            <p id="statRechazadas" class="text-3xl font-extrabold text-red-600 mt-1">0</p>
+                        </div>
+                        <div class="bg-red-100 text-red-600 p-3 rounded-lg"><i class="fa-solid fa-ban text-xl"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <div class="relative w-full md:w-64">
+                        <i class="fa-solid fa-filter absolute left-3 top-3 text-slate-400"></i>
+                        <select id="filtroEstado" onchange="cargarSolicitudes()" class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none font-medium text-slate-700 cursor-pointer">
+                            <option value="">Mostrar todos los estados</option>
+                            <option value="pendiente">⏳ Solo Pendientes</option>
+                            <option value="en proceso">⚙️ En Proceso</option>
+                            <option value="completado">✅ Completados</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="abrirModal()" class="w-full md:w-auto bg-blue-600 text-white px-5 py-2.5 rounded-lg font-bold shadow-sm hover:bg-blue-700 hover:shadow-md transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Nueva Solicitud
+                </button>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse whitespace-nowrap">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
+                                <th class="px-6 py-4 font-semibold">ID</th>
+                                <th class="px-6 py-4 font-semibold">Título</th>
+                                <th class="px-6 py-4 font-semibold">Categoría</th>
+                                <th class="px-6 py-4 font-semibold">Solicitante</th>
+                                <th class="px-6 py-4 font-semibold">Estado</th>
+                                <th class="px-6 py-4 font-semibold">Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaSolicitudes" class="text-sm divide-y divide-slate-100">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <footer class="bg-white border-t border-slate-200 py-6 mt-auto">
+            <div class="max-w-7xl mx-auto px-4 text-center">
+                <p class="text-slate-500 text-sm font-medium">
+                    Hecho con <i class="fa-solid fa-code text-blue-600 mx-1"></i> y <i class="fa-solid fa-mug-hot text-amber-600 mx-1"></i> por <span class="font-bold text-slate-800">Daniel Rivera</span>
+                </p>
+                <p class="text-slate-400 text-xs mt-1">Prueba Técnica C# / SQL Server / Vanilla JS</p>
+            </div>
+        </footer>
+    </div>
+
+    <div id="modalSolicitud" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all overflow-hidden">
+            <div class="bg-slate-50 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-slate-800"><i class="fa-solid fa-file-circle-plus text-blue-600 mr-2"></i>Crear Solicitud</h2>
+                <button onclick="cerrarModal()" class="text-slate-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-6">
+                <form id="formCrear" onsubmit="crearSolicitud(event)">
+                    <div class="mb-5">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Título de la petición</label>
+                        <input type="text" id="solTitulo" class="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" placeholder="Ej. Cambio de equipo" required>
+                    </div>
+                    <div class="mb-5">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Área / Categoría</label>
+                        <select id="solCategoria" class="w-full border border-slate-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white cursor-pointer" required>
+                            <option value="1">🖥️ Soporte Técnico</option>
+                            <option value="2">👥 Recursos Humanos</option>
+                            <option value="3">🔧 Mantenimiento</option>
+                        </select>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Descripción detallada</label>
+                        <textarea id="solDescripcion" class="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none" rows="4" placeholder="Describe el problema o requerimiento..." required></textarea>
+                    </div>
+                    <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                        <button type="button" onclick="cerrarModal()" class="px-5 py-2.5 text-sm font-semibold text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition">Cancelar</button>
+                        <button type="submit" class="px-5 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm transition flex items-center gap-2">
+                            <i class="fa-solid fa-paper-plane"></i> Enviar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:5284/api"; 
+        
+        async function iniciarSesion(e) {
+            e.preventDefault();
+            const correo = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cargando...';
+
+            try {
+                const response = await fetch(`${API_URL}/Usuarios/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ correo, password })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('token', data.token);
+                    document.getElementById('loginScreen').classList.add('hidden');
+                    document.getElementById('mainScreen').classList.remove('hidden');
+                    document.getElementById('mainScreen').classList.add('flex'); // Asegurar flex para el footer
+                    
+                    cargarDashboard();
+                    cargarSolicitudes();
+                } else {
+                    document.getElementById('loginError').classList.remove('hidden');
+                }
+            } catch (error) {
+                document.getElementById('loginError').innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> Error conectando al servidor.';
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+            btn.innerHTML = originalText;
+        }
+
+        async function cargarDashboard() {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_URL}/Dashboard/resumen`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('statTotal').innerText = data.estadisticasGenerales.total;
+                document.getElementById('statPendientes').innerText = data.estadisticasGenerales.pendientes;
+                document.getElementById('statCompletadas').innerText = data.estadisticasGenerales.completadas;
+                document.getElementById('statRechazadas').innerText = data.estadisticasGenerales.rechazadas;
+            }
+        }
+
+        async function cargarSolicitudes() {
+            const token = localStorage.getItem('token');
+            const estado = document.getElementById('filtroEstado').value;
+            
+            let url = `${API_URL}/Solicitudes`;
+            if (estado) url += `?estado=${estado}`;
+
+            const response = await fetch(url, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const solicitudes = await response.json();
+                const tbody = document.getElementById('tablaSolicitudes');
+                tbody.innerHTML = ''; 
+
+                if(solicitudes.length === 0){
+                    tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-slate-400 font-medium"><i class="fa-regular fa-folder-open text-3xl mb-2 block"></i> No hay solicitudes registradas.</td></tr>`;
+                    return;
+                }
+
+                solicitudes.forEach(sol => {
+                    let colorBadge = 'bg-slate-100 text-slate-700 border-slate-200';
+                    let icon = '';
+                    if(sol.estado.toLowerCase() === 'pendiente') { colorBadge = 'bg-yellow-50 text-yellow-700 border-yellow-200'; icon = '<i class="fa-regular fa-clock mr-1"></i>'; }
+                    if(sol.estado.toLowerCase() === 'completado') { colorBadge = 'bg-emerald-50 text-emerald-700 border-emerald-200'; icon = '<i class="fa-solid fa-check mr-1"></i>'; }
+                    if(sol.estado.toLowerCase() === 'rechazado') { colorBadge = 'bg-red-50 text-red-700 border-red-200'; icon = '<i class="fa-solid fa-xmark mr-1"></i>'; }
+                    if(sol.estado.toLowerCase() === 'en proceso') { colorBadge = 'bg-blue-50 text-blue-700 border-blue-200'; icon = '<i class="fa-solid fa-gears mr-1"></i>'; }
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="px-6 py-4 font-bold text-slate-700">#${sol.idSolicitud}</td>
+                            <td class="px-6 py-4 font-medium text-slate-900">${sol.titulo}</td>
+                            <td class="px-6 py-4 text-slate-600"><span class="bg-slate-100 px-2 py-1 rounded text-xs">${sol.categoria}</span></td>
+                            <td class="px-6 py-4 text-slate-600"><div class="flex items-center gap-2"><div class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">${sol.solicitante.charAt(0).toUpperCase()}</div> ${sol.solicitante}</div></td>
+                            <td class="px-6 py-4"><span class="px-2.5 py-1 rounded-full text-xs font-bold border ${colorBadge} flex items-center w-max">${icon} ${sol.estado}</span></td>
+                            <td class="px-6 py-4 text-slate-500 text-sm"><i class="fa-regular fa-calendar-days mr-1"></i> ${new Date(sol.fechaCreacion).toLocaleDateString()}</td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        async function crearSolicitud(e) {
+            e.preventDefault();
+            const token = localStorage.getItem('token');
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+            btn.disabled = true;
+            
+            const payload = {
+                idUsuarioSolicitante: 1, 
+                idCategoria: parseInt(document.getElementById('solCategoria').value),
+                titulo: document.getElementById('solTitulo').value,
+                descripcion: document.getElementById('solDescripcion').value
+            };
+
+            const response = await fetch(`${API_URL}/Solicitudes`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                cerrarModal();
+                cargarDashboard();
+                cargarSolicitudes();
+            } else {
+                alert("Error al crear la solicitud.");
+            }
+            
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+
+        function abrirModal() { document.getElementById('modalSolicitud').classList.remove('hidden'); }
+        function cerrarModal() { 
+            document.getElementById('modalSolicitud').classList.add('hidden'); 
+            document.getElementById('formCrear').reset();
+        }
+        function cerrarSesion() {
+            localStorage.clear();
+            document.getElementById('mainScreen').classList.add('hidden');
+            document.getElementById('mainScreen').classList.remove('flex');
+            document.getElementById('loginScreen').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
